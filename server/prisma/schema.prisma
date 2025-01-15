@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model action {
+  id            Int      @id
+  name          String   @db.Text
+  description   String?  @db.Text
+  service_id    Int?
+  parameters    String?  @db.LongText
+  passable_data String?  @db.LongText
+  service       service? @relation(fields: [service_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "action_ibfk_1")
+  area          area[]
+
+  @@index([service_id], map: "serviceId")
+}
+
+model area {
+  id               Int             @id @default(autoincrement())
+  action_id        Int?
+  name             String?         @db.Text
+  created_at       DateTime?       @default(now()) @db.Timestamp(0)
+  user_id          String?         @db.Text
+  status           Boolean?
+  parameters       String?         @db.LongText
+  last_state_token String?         @db.Text
+  description      String?         @db.Text
+  action           action?         @relation(fields: [action_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "area_ibfk_1")
+  area_reaction    area_reaction[]
+
+  @@index([action_id], map: "actionId")
+}
+
+model area_reaction {
+  area_id     Int
+  reaction_id Int
+  parameters  String?  @db.LongText
+  area        area     @relation(fields: [area_id], references: [id], onUpdate: Restrict, map: "area_reaction_ibfk_1")
+  reaction    reaction @relation(fields: [reaction_id], references: [id], onUpdate: Restrict, map: "area_reaction_ibfk_2")
+
+  @@id([area_id, reaction_id])
+  @@index([reaction_id], map: "reaction_id")
+}
+
+model reaction {
+  id            Int             @id
+  name          String          @db.Text
+  description   String?         @db.Text
+  service_id    Int?
+  parameters    String?         @db.LongText
+  area_reaction area_reaction[]
+  service       service?        @relation(fields: [service_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "reaction_ibfk_1")
+
+  @@index([service_id], map: "serviceId")
+}
+
+model service {
+  id           Int        @id @default(autoincrement())
+  name         String     @db.VarChar(255)
+  display_name String?    @db.Text
+  icon         String?    @db.Text
+  action       action[]
+  reaction     reaction[]
+}
+
+model token {
+  id            Int     @id @default(autoincrement())
+  user_id       String  @db.Text
+  access_token  String  @db.Text
+  refresh_token String? @db.Text
+}

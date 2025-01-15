@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+
+  # front:
+  #   build:
+  #     context: ./front/area
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8081:80"
+  #   depends_on:
+  #     - server
+
+  back:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    ports:
+      - "8090:90"
+    depends_on:
+      - server
